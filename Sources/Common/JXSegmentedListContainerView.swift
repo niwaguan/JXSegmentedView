@@ -171,6 +171,7 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
         while next != nil {
             if let vc = next as? UIViewController{
                 vc.addChild(containerVC)
+                containerVC.didMove(toParent: vc)
                 break
             }
             next = next?.next
@@ -191,19 +192,19 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
                 for (index, list) in validListDict {
                     list.listView().frame = CGRect(x: CGFloat(index)*scrollView.bounds.size.width, y: 0, width: scrollView.bounds.size.width, height: scrollView.bounds.size.height)
                 }
-                scrollView.contentOffset = CGPoint(x: CGFloat(currentIndex)*scrollView.bounds.size.width, y: 0)
             }else {
                 scrollView.frame = bounds
                 scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(count), height: scrollView.bounds.size.height)
             }
+            scrollView.contentOffset = CGPoint(x: CGFloat(currentIndex)*scrollView.bounds.size.width, y: 0)
         }else {
             if collectionView.frame == CGRect.zero || collectionView.bounds.size != bounds.size {
                 collectionView.frame = bounds
                 collectionView.collectionViewLayout.invalidateLayout()
-                collectionView.setContentOffset(CGPoint(x: CGFloat(currentIndex)*collectionView.bounds.size.width, y: 0), animated: false)
             }else {
                 collectionView.frame = bounds
             }
+            collectionView.setContentOffset(CGPoint(x: CGFloat(currentIndex)*collectionView.bounds.size.width, y: 0), animated: false)
         }
     }
 
@@ -238,6 +239,7 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
         }
         validListDict.values.forEach { (list) in
             if let listVC = list as? UIViewController {
+                listVC.willMove(toParent: nil)
                 listVC.removeFromParent()
             }
             list.listView().removeFromSuperview()
@@ -250,6 +252,50 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
         }
         listWillAppear(at: currentIndex)
         listDidAppear(at: currentIndex)
+    }
+    
+    /// 批量更新
+    public func performBatchUpdate(deletes: IndexSet, inserts: IndexSet, moves: [JXMoveIndex]) {
+        guard let dataSource = dataSource else { return }
+        
+        // 需要删除的，清理记录
+        deletes.forEach { i in
+            if let removed = validListDict.removeValue(forKey: i) {
+                if let vc = removed as? UIViewController {
+                    vc.willMove(toParent: nil)
+                    vc.removeFromParent()
+                }
+                removed.listView().removeFromSuperview()
+            }
+        }
+        // 添加上的无需操作，后面会动态加载
+        
+        switch type {
+        case .scrollView:
+            scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(dataSource.numberOfLists(in: self)), height: scrollView.bounds.size.height)
+            
+            moves.forEach { i in
+                if let removed = validListDict.removeValue(forKey: i.from) {
+                    validListDict[i.to] = removed
+                    removed.listView().frame = CGRect(x: CGFloat(i.to)*scrollView.bounds.size.width, y: 0, width: scrollView.bounds.size.width, height: scrollView.bounds.size.height)
+                }
+            }
+            break
+        case .collectionView:
+            
+            moves.forEach { i in
+                if let removed = validListDict.removeValue(forKey: i.from) {
+                    validListDict[i.to] = removed
+                }
+            }
+            
+            break
+        }
+        
+        listWillAppear(at: currentIndex)
+        listDidAppear(at: currentIndex)
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
     //MARK: - Private
@@ -283,6 +329,10 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
             cell?.contentView.subviews.forEach { $0.removeFromSuperview() }
             list.listView().frame = cell?.contentView.bounds ?? CGRect.zero
             cell?.contentView.addSubview(list.listView())
+        }
+        
+        if let vc = list as? UIViewController {
+            vc.didMove(toParent: containerVC)
         }
     }
 
