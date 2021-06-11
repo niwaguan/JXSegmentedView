@@ -59,6 +59,9 @@ public protocol JXSegmentedListContainerViewDataSource {
 
 open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, JXSegmentedViewRTLCompatible {
     open private(set) var type: JXSegmentedListContainerType
+    /// 点击切换的时候，contentScrollView的切换是否需要动画
+    open var isContentScrollViewClickTransitionAnimationEnabled: Bool = true
+
     open private(set) weak var dataSource: JXSegmentedListContainerViewDataSource?
     open private(set) var scrollView: UIScrollView!
     /// 已经加载过的列表字典。key是index，value是对应的列表
@@ -224,10 +227,11 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
         willAppearIndex = -1
         willDisappearIndex = -1
         if currentIndex != index {
-            listWillDisappear(at: currentIndex)
-            listWillAppear(at: index)
-            listDidDisappear(at: currentIndex)
-            listDidAppear(at: index)
+            scrollView.setContentOffset(CGPoint(x: scrollView.bounds.width*CGFloat(index), y: 0), animated: isContentScrollViewClickTransitionAnimationEnabled)
+//            listWillDisappear(at: currentIndex)
+//            listWillAppear(at: index)
+//            listDidDisappear(at: currentIndex)
+//            listDidAppear(at: index)
         }
     }
 

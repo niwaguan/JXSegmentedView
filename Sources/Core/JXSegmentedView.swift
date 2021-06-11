@@ -190,9 +190,7 @@ open class JXSegmentedView: UIView, JXSegmentedViewRTLCompatible {
     open var contentEdgeInsetLeft: CGFloat = JXSegmentedViewAutomaticDimension
     /// 整体内容的右边距，默认JXSegmentedViewAutomaticDimension（等于itemSpacing）
     open var contentEdgeInsetRight: CGFloat = JXSegmentedViewAutomaticDimension
-    /// 点击切换的时候，contentScrollView的切换是否需要动画
-    open var isContentScrollViewClickTransitionAnimationEnabled: Bool = true
-
+    
     private var itemDataSource = [JXSegmentedBaseItemModel]()
     private var innerItemSpacing: CGFloat = 0
     private var lastContentOffset: CGPoint = CGPoint.zero
@@ -366,9 +364,9 @@ open class JXSegmentedView: UIView, JXSegmentedViewRTLCompatible {
                 parentView?.setNeedsLayout()
                 parentView?.layoutIfNeeded()
             }
-
-            contentScrollView!.setContentOffset(CGPoint(x: CGFloat(selectedIndex) * contentScrollView!.bounds.size.width
-                , y: 0), animated: false)
+            
+            /// 不要修改JXSegmentedListContainerView，只需通知本视图的变化即可
+//            contentScrollView!.setContentOffset(CGPoint(x: CGFloat(selectedIndex) * contentScrollView!.bounds.size.width, y: 0), animated: false)
         }
 
         for indicator in indicators {
@@ -571,9 +569,10 @@ open class JXSegmentedView: UIView, JXSegmentedViewRTLCompatible {
             collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: true)
         }
 
-        if contentScrollView != nil && (selectedType == .click || selectedType == .code) {
-            contentScrollView!.setContentOffset(CGPoint(x: contentScrollView!.bounds.size.width*CGFloat(index), y: 0), animated: isContentScrollViewClickTransitionAnimationEnabled)
-        }
+        /// 不要修改JXSegmentedListContainerView，只需通知本视图的变化即可
+//        if contentScrollView != nil && (selectedType == .click || selectedType == .code) {
+//            contentScrollView!.setContentOffset(CGPoint(x: contentScrollView!.bounds.size.width*CGFloat(index), y: 0), animated: isContentScrollViewClickTransitionAnimationEnabled)
+//        }
 
         selectedIndex = index
 
