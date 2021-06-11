@@ -91,8 +91,18 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
         }
     }()
     private lazy var containerVC = JXSegmentedListContainerViewController()
-    private var willAppearIndex: Int = -1
+    private var willAppearIndexes: [Int] = []
+    {
+        didSet {
+            debugPrint("✅willAppearIndex: \(willAppearIndexes)")
+        }
+    }
     private var willDisappearIndex: Int = -1
+    {
+        didSet {
+            debugPrint("❌willDisappearIndex: \(willDisappearIndex)")
+        }
+    }
 
     public init(dataSource: JXSegmentedListContainerViewDataSource, type: JXSegmentedListContainerType = .scrollView) {
         self.dataSource = dataSource
@@ -220,7 +230,7 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
         guard checkIndexValid(index) else {
             return
         }
-        willAppearIndex = -1
+        willAppearIndexes = []
         willDisappearIndex = -1
         if currentIndex != index {
             listWillDisappear(at: currentIndex)
@@ -369,6 +379,41 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
             vc.endAppearanceTransition()
         }
     }
+    
+    private func fixStableIndex(in scrollView: UIScrollView) {
+        /// 应该显示的索引
+        let appearIndex = Int(scrollView.contentOffset.x/scrollView.bounds.size.width)
+        
+        if appearIndex == willDisappearIndex {
+            // 预测出现的，现在消失了
+            willAppearIndexes.forEach {
+                debugPrint("❌ \($0)")
+                listWillDisappear(at: $0)
+                listDidDisappear(at: $0)
+            }
+            /// 预测消失的，现在出现了
+            debugPrint("✅ \(appearIndex)")
+            listWillAppear(at: appearIndex)
+            listDidAppear(at: appearIndex)
+        }
+        else {
+            // 预测出现的，现在消失了
+            willAppearIndexes.removeAll(where: { $0 == appearIndex })
+            willAppearIndexes.forEach {
+                debugPrint("❌ \($0)")
+                listWillDisappear(at: $0)
+                listDidDisappear(at: $0)
+            }
+            // 预测消失的，真的消失了
+            debugPrint("❌ \(willDisappearIndex)")
+            listDidDisappear(at: willDisappearIndex)
+            // 预测出现的，现在真的出现了
+            debugPrint("✅ \(appearIndex)")
+            listDidAppear(at: appearIndex)
+        }
+        willAppearIndexes = []
+        willDisappearIndex = -1
+    }
 
     private func checkIndexValid(_ index: Int) -> Bool {
         guard let dataSource = dataSource else { return false }
@@ -377,31 +422,6 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
             return false
         }
         return true
-    }
-
-    private func listDidAppearOrDisappear(scrollView: UIScrollView) {
-        let currentIndexPercent = scrollView.contentOffset.x/scrollView.bounds.size.width
-        if willAppearIndex != -1 || willDisappearIndex != -1 {
-            let disappearIndex = willDisappearIndex
-            let appearIndex = willAppearIndex
-            if willAppearIndex > willDisappearIndex {
-                //将要出现的列表在右边
-                if currentIndexPercent >= CGFloat(willAppearIndex) {
-                    willDisappearIndex = -1
-                    willAppearIndex = -1
-                    listDidDisappear(at: disappearIndex)
-                    listDidAppear(at: appearIndex)
-                }
-            }else {
-                //将要出现的列表在左边
-                if currentIndexPercent <= CGFloat(willAppearIndex) {
-                    willDisappearIndex = -1
-                    willAppearIndex = -1
-                    listDidDisappear(at: disappearIndex)
-                    listDidAppear(at: appearIndex)
-                }
-            }
-        }
     }
 }
 
@@ -426,7 +446,8 @@ extension JXSegmentedListContainerView: UICollectionViewDataSource, UICollection
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return bounds.size
     }
-
+    
+    /// 在滚动过程中收集信息：消失的、出现的（可能有多个）
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView.isTracking || scrollView.isDragging else {
             return
@@ -436,54 +457,44 @@ extension JXSegmentedListContainerView: UICollectionViewDataSource, UICollection
         var leftIndex = Int(floor(Double(percent)))
         leftIndex = max(0, min(maxCount - 1, leftIndex))
         let rightIndex = leftIndex + 1;
-        if percent < 0 || rightIndex >= maxCount {
-            listDidAppearOrDisappear(scrollView: scrollView)
-            return
-        }
+        //        debugPrint("left: \(leftIndex), current: \(currentIndex), right: \(rightIndex)")
         let remainderRatio = percent - CGFloat(leftIndex)
         if rightIndex == currentIndex {
             //当前选中的在右边，用户正在从右边往左边滑动
             if validListDict[leftIndex] == nil && remainderRatio < (1 - initListPercent) {
                 initListIfNeeded(at: leftIndex)
-            }else if validListDict[leftIndex] != nil {
-                if willAppearIndex == -1 {
-                    willAppearIndex = leftIndex;
-                    listWillAppear(at: willAppearIndex)
-                }
+            } else if validListDict[leftIndex] != nil && !willAppearIndexes.contains(leftIndex) {
+                willAppearIndexes.append(leftIndex)
+                listWillAppear(at: leftIndex)
             }
-
+            
             if willDisappearIndex == -1 {
                 willDisappearIndex = rightIndex
                 listWillDisappear(at: willDisappearIndex)
             }
-        }else {
+        } else {
             //当前选中的在左边，用户正在从左边往右边滑动
             if validListDict[rightIndex] == nil && remainderRatio > initListPercent {
                 initListIfNeeded(at: rightIndex)
-            }else if validListDict[rightIndex] != nil {
-                if willAppearIndex == -1 {
-                    willAppearIndex = rightIndex
-                    listWillAppear(at: willAppearIndex)
-                }
+            } else if validListDict[rightIndex] != nil && !willAppearIndexes.contains(rightIndex) {
+                willAppearIndexes.append(rightIndex)
+                listWillAppear(at: rightIndex)
             }
             if willDisappearIndex == -1 {
                 willDisappearIndex = leftIndex
                 listWillDisappear(at: willDisappearIndex)
             }
         }
-        listDidAppearOrDisappear(scrollView: scrollView)
     }
-
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        //滑动到一半又取消滑动处理
-        if willAppearIndex != -1 || willDisappearIndex != -1 {
-            listWillDisappear(at: willAppearIndex)
-            listWillAppear(at: willDisappearIndex)
-            listDidDisappear(at: willAppearIndex)
-            listDidAppear(at: willDisappearIndex)
-            willDisappearIndex = -1
-            willAppearIndex = -1
+    /// 滚动结束后，根据当前屏幕正在显示的索引和之前收集的信息，更新所有list的状态
+    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            fixStableIndex(in: scrollView)
         }
+    }
+    
+    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        fixStableIndex(in: scrollView)
     }
 }
 
