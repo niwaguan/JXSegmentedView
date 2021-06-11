@@ -527,10 +527,10 @@ extension JXSegmentedListContainerView: UICollectionViewDataSource, UICollection
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         //滑动到一半又取消滑动处理
         if willAppearIndex != -1 || willDisappearIndex != -1 {
-            listWillDisappear(at: willAppearIndex)
-            listWillAppear(at: willDisappearIndex)
-            listDidDisappear(at: willAppearIndex)
-            listDidAppear(at: willDisappearIndex)
+            listWillDisappear(at: willDisappearIndex)
+            listWillAppear(at: willAppearIndex)
+            listDidDisappear(at: willDisappearIndex)
+            listDidAppear(at: willAppearIndex)
             willDisappearIndex = -1
             willAppearIndex = -1
         }
