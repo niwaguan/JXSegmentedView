@@ -423,7 +423,7 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
     private func checkIndexValid(_ index: Int) -> Bool {
         guard let dataSource = dataSource else { return false }
         let count = dataSource.numberOfLists(in: self)
-        if count <= 0 || index >= count {
+        if count <= 0 || index >= count || index < 0 {
             return false
         }
         return true
