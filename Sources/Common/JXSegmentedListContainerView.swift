@@ -431,6 +431,7 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
     }
     
     private func fixStableIndex(in scrollView: UIScrollView) {
+        debugPrint(#function)
         /// 应该显示的索引
         let appearIndex = Int(scrollView.contentOffset.x/scrollView.bounds.size.width)
         
@@ -447,6 +448,8 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
             listDidAppear(at: appearIndex)
         }
         else {
+            // appearIndex 可能不在willAppearIndexes列表中，记录下
+            let inAppearance = willAppearIndexes.contains(appearIndex)
             // 预测出现的，现在消失了
             willAppearIndexes.removeAll(where: { $0 == appearIndex })
             willAppearIndexes.forEach {
@@ -459,6 +462,9 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
             listDidDisappear(at: willDisappearIndex)
             // 预测出现的，现在真的出现了
             debugPrint("✅ \(appearIndex)")
+            if !inAppearance {
+                listWillAppear(at: appearIndex)
+            }
             listDidAppear(at: appearIndex)
         }
         willAppearIndexes = []
