@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0527B22F2692B24D00E1E380 /* icon_recommend.png in Resources */ = {isa = PBXBuildFile; fileRef = 0527B22E2692B24D00E1E380 /* icon_recommend.png */; };
 		1908EEAF226F05BA00E03FD5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1908EE51226F05BA00E03FD5 /* ViewController.swift */; };
 		1908EEB0226F05BA00E03FD5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1908EE52226F05BA00E03FD5 /* Assets.xcassets */; };
 		1908EEB1226F05BA00E03FD5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1908EE53226F05BA00E03FD5 /* LaunchScreen.storyboard */; };
@@ -74,6 +75,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0527B22E2692B24D00E1E380 /* icon_recommend.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_recommend.png; sourceTree = "<group>"; };
 		1904AA2321D31F6400316F97 /* JXSegmentedViewExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JXSegmentedViewExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1908EE51226F05BA00E03FD5 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		1908EE52226F05BA00E03FD5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -304,6 +306,7 @@
 		195AC3C32338955000181212 /* Image */ = {
 			isa = PBXGroup;
 			children = (
+				0527B22E2692B24D00E1E380 /* icon_recommend.png */,
 				195AC3C42338955000181212 /* dog.png */,
 				195AC3C52338955000181212 /* horse.png */,
 				195AC3C62338955000181212 /* JXSegmentedViewSmall.png */,
@@ -399,6 +402,7 @@
 				195AC3DC2338955000181212 /* frog.png in Resources */,
 				1908EEB2226F05BA00E03FD5 /* Main.storyboard in Resources */,
 				195AC3D32338955000181212 /* horse.png in Resources */,
+				0527B22F2692B24D00E1E380 /* icon_recommend.png in Resources */,
 				195AC3DA2338955000181212 /* cow.png in Resources */,
 				195AC3D42338955000181212 /* JXSegmentedViewSmall.png in Resources */,
 				195AC3DB2338955000181212 /* light.png in Resources */,

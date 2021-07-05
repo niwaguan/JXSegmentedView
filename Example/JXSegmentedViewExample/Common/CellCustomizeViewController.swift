@@ -30,6 +30,7 @@ class CellCustomizeViewController: UITableViewController {
         let titles = ["猴哥", "青蛙王子", "旺财", "粉红猪", "喜羊羊", "黄焖鸡", "小马哥", "牛魔王", "大象先生", "神龙"]
         let numbers = [1, 22, 333, 44444, 0, 66, 777, 0, 99999, 10]
         let dotStates = [false, true, true, true, false, false, true, true, false, true]
+        let cornerMarkers = ["", "", "", "", "icon_recommend", "", "", "", "", ""]
         let vc = ContentBaseViewController()
         vc.title = itemTitle
 
@@ -102,10 +103,13 @@ class CellCustomizeViewController: UITableViewController {
             vc.segmentedDataSource = dataSource
         case "数字":
             //配置数据源
-            let dataSource = JXSegmentedNumberDataSource()
+            let dataSource = JXSegmentedCustomDataSource()
             dataSource.isTitleColorGradientEnabled = true
             dataSource.titles = titles
             dataSource.numbers = numbers
+            dataSource.cornerMarkerImages = cornerMarkers
+            dataSource.imageSize = CGSize.init(width: 16, height: 18)
+            dataSource.imageOffsetY = 2
 //            dataSource.numberHeight = 20
             dataSource.numberStringFormatterClosure = {(number) -> String in
                 if number > 999 {
