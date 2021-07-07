@@ -301,9 +301,10 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
             
             break
         }
-        
-        listWillAppear(at: currentIndex)
-        listDidAppear(at: currentIndex)
+        if (containerVC.viewIsVisible) {
+            listWillAppear(at: currentIndex)
+            listDidAppear(at: currentIndex)
+        }
         setNeedsLayout()
         layoutIfNeeded()
     }
@@ -560,10 +561,14 @@ class JXSegmentedListContainerViewController: UIViewController {
     var viewDidAppearClosure: (()->())?
     var viewWillDisappearClosure: (()->())?
     var viewDidDisappearClosure: (()->())?
+
+    var viewIsVisible = false
+    
     override var shouldAutomaticallyForwardAppearanceMethods: Bool { return false }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         viewWillAppearClosure?()
+        viewIsVisible = true
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -572,6 +577,7 @@ class JXSegmentedListContainerViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         viewWillDisappearClosure?()
+        viewIsVisible = false
     }
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
