@@ -284,11 +284,30 @@ open class JXSegmentedListContainerView: UIView, JXSegmentedViewListContainer, J
         case .scrollView:
             scrollView.contentSize = CGSize(width: scrollView.bounds.size.width*CGFloat(dataSource.numberOfLists(in: self)), height: scrollView.bounds.size.height)
             
+            /// 原始数据备份
+            let backup = validListDict
+            /// 处理过的记录
+            var processed: [JXMoveIndex] = []
+            /// 判断给定移动数据是否被处理过
+            let fromShouldRemove: (JXMoveIndex) -> Bool = { i in
+                return processed.first(where: { i.from == $0.to }) == nil
+            }
+            
             moves.forEach { i in
-                if let removed = validListDict.removeValue(forKey: i.from) {
-                    validListDict[i.to] = removed
-                    removed.listView().frame = CGRect(x: CGFloat(i.to)*scrollView.bounds.size.width, y: 0, width: scrollView.bounds.size.width, height: scrollView.bounds.size.height)
+                let fromView = backup[i.from], toView = backup[i.to]
+                /// 都没有加载，就跳过
+                if fromView == nil && toView == nil {
+                    return
+                } else {
+                    // 之前的移动操作覆盖了本次移动的起点，则不能删除；
+                    // 否则就删除掉，将删除过的添加到目标位置
+                    if fromShouldRemove(i) {
+                        validListDict.removeValue(forKey: i.from)
+                    }
+                    validListDict[i.to] = fromView
+                    fromView?.listView().frame = CGRect(x: CGFloat(i.to)*scrollView.bounds.size.width, y: 0, width: scrollView.bounds.size.width, height: scrollView.bounds.size.height)
                 }
+                processed.append(i)
             }
             break
         case .collectionView:
